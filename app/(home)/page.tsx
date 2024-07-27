@@ -2,37 +2,85 @@
 
 import Link from "next/link";
 import { useCursors } from "./cursors-provider";
+import React, { useState } from "react";
+import "./styles.css"; // Ensure this path is correct
 
 export default function Home() {
   const { getCount } = useCursors();
   const count = getCount();
 
+  const [progress, setProgress] = useState([0, 0, 0, 0]);
+  const [inputText, setInputText] = useState("");
+
+  const readOnlyText =
+    "TEST test TEST TEST test TEST TEST test TEST TEST test TEST TEST test TEST TEST test TEST TEST test TEST TEST test TEST TEST test TEST";
+
+  const updateProgress = (index: number, value: number) => {
+    const newProgress = [...progress];
+    newProgress[index] = value;
+    setProgress(newProgress);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputText(value);
+
+    const correctChars = value
+      .split("")
+      .filter((char, index) => char === readOnlyText[index]).length;
+    const progressValue = (correctChars / readOnlyText.length) * 100;
+    updateProgress(0, progressValue); // Assuming you want to update the first progress bar
+  };
+
   return (
     <div className="w-full flex flex-col gap-8">
-      <section className="bg-yellow-100 w-full p-2 rounded flex justify-center items-center text-xl">
-        <p>
-          <strong>{count}</strong> multiplayer cursor{count != 1 ? "s" : ""} 🎈
-        </p>
-      </section>
-
-      <section className="flex flex-col gap-2">
-        <h1 className="text-4xl font-medium pb-6">PartyKit Starter Kit</h1>
-        <p>What you’ll find here...</p>
-        <ul className="list-disc list-inside">
-          <li>Multiplayer chatrooms</li>
-          <li>AI chatbots</li>
-          <li>Sample client and party code for all of the above</li>
-        </ul>
-        <p>
-          Check <code>README.md</code> for how to run this locally in 3 steps.
-        </p>
-      </section>
-
-      <Link href="/chat" className="underline">
-        <button className="flex items-center justify-center px-10 py-6 border border-stone-200 rounded-lg shadow hover:shadow-md">
-          AI Chat -&gt;
-        </button>
-      </Link>
+      <div>
+        {progress.map((value, index) => (
+          <div key={index} className="progress-container">
+            <div
+              id={`progress${index + 1}`}
+              className="progress-bar"
+              style={{ width: `${value}%` }}
+            ></div>
+            <img
+              src="./car.png"
+              alt="Car"
+              className="car"
+              id={`car${index + 1}`}
+              style={{ left: `${value}%` }}
+            />
+            <div className="slider-container">
+              <label htmlFor={`slider${index + 1}`}>
+                Progress {index + 1}:
+              </label>
+              <input
+                type="range"
+                id={`slider${index + 1}`}
+                className="slider"
+                min="0"
+                max="100"
+                value={value}
+                onChange={(e) => updateProgress(index, Number(e.target.value))}
+              />
+            </div>
+          </div>
+        ))}
+        <div className="textbox-container">
+          <input
+            type="text"
+            value={readOnlyText}
+            readOnly
+            className="textbox"
+          />
+          <input
+            type="text"
+            placeholder="Enter text here"
+            className="textbox"
+            value={inputText}
+            onChange={handleInputChange}
+          />
+        </div>
+      </div>
     </div>
   );
 }
